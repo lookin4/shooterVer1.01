@@ -32,7 +32,7 @@ canvas {
   Your WEB browser does not support audio tag.
 </audio>
 
-<canvas width="1000" height="800"></canvas>
+<canvas width="700" height="600"></canvas>
 
 <script src="explode.js"></script>
 
@@ -67,6 +67,9 @@ bgmAudio.play();
 
 var lazerPower = 0;
 
+var yellowCount = 0;
+var redCount = 0;
+
 function Enemy(canvas) {
 
     var x, y;
@@ -78,21 +81,21 @@ function Enemy(canvas) {
 
     var bullets = [];
 
-    var er = 50; // enemy radius
-    var br = 15; // bullet radius
+    var er = 30; // enemy radius
+    var br = 8; // bullet radius
 
     function spawn() {
         x = canvas.width*Math.random();
         y = -er;
         vx = 0;
-        vy = 100*Math.random() + 200;
+        vy = 100*Math.random() + 100;
     };
     spawn();
 
     var lifeProp = [];
     lifeProp[3] = { color: 'white',  fireP: 0.001, numB:  8, daze: 0 };
-    lifeProp[2] = { color: 'yellow', fireP: 0.05, numB: 16, daze: 8 };
-    lifeProp[1] = { color: 'red',    fireP: 0.1,  numB: 40, daze: 20 };
+    lifeProp[2] = { color: 'yellow', fireP: 0.05, numB: 16, daze: 4 };
+    lifeProp[1] = { color: 'red',    fireP: 0.1,  numB: 40, daze: 10 };
     /*lifeProp[3] = { color: 'white', fireP: 0.1, numB: 40, daze: 20 };
     lifeProp[2] = { color: 'yellow', fireP: 0.05, numB: 20, daze: 8 };
     lifeProp[1] = { color: 'red', fireP: 0.001, numB: 8, daze: 0 };*/
@@ -121,9 +124,9 @@ function Enemy(canvas) {
     this.fire = function() {
         var n = lifeProp[life].numB;
         for (var i = 0; i < n; i++) {
-            var th = i*2*Math.PI/n;
-            var vx = 300 * Math.cos(th);
-            var vy = 300 * Math.sin(th);
+            var th = i*1*Math.PI/n;
+            var vx = 250 * Math.cos(th);
+            var vy = 250 * Math.sin(th);
             var bullet = { x: x, y: y, vx: vx, vy: vy, life: 1 };
             bullets.push(bullet);
         }
@@ -206,12 +209,22 @@ function Enemy(canvas) {
     this.damage = function() {
         if (--life <= 0) {
             this.die();
-            lazerPower += 10;
+            redCount--;
+            lazerPower += 1 + redCount * 10+ yellowCount * 3;
             if (lazerPower > 200) {
                 lazerPower = 200;
             }
         } else {
             this.fire();
+            switch(life){
+            case 1:
+                yellowCount--;
+                redCount++;
+                break;
+            case 2:
+                yellowCount++;
+                break;
+            }
         }
     };
 
@@ -335,6 +348,8 @@ window.onload = function() {
             drawEnemies = true;
             drawPlayer = true;
             drawStatus = true;
+            redCount = 0;
+            yellowCount = 0;
             break;
         case Status.dying:
             explode.draw(ctx, myX, myY);
@@ -350,6 +365,8 @@ window.onload = function() {
             drawEnemies = true;
             drawStatus = true;
             lazerPower = 0;
+            redCount = 0;
+            yellowCount = 0;
             break;
         default:
             console.log('unknown status: ' + status);
@@ -435,18 +452,18 @@ window.onload = function() {
 
             ctx.beginPath();
             ctx.fillStyle = 'white';
-            ctx.moveTo(canvas.width - 222, canvas.height - 52);
-            ctx.lineTo(canvas.width - 222, canvas.height - 18);
-            ctx.lineTo(canvas.width - 18, canvas.height - 18);
-            ctx.lineTo(canvas.width - 18, canvas.height - 52);
+            ctx.moveTo(canvas.width - 222, canvas.height - 72);
+            ctx.lineTo(canvas.width - 222, canvas.height - 38);
+            ctx.lineTo(canvas.width - 18, canvas.height - 38);
+            ctx.lineTo(canvas.width - 18, canvas.height - 72);
             ctx.fill();
 
             ctx.beginPath();
             ctx.fillStyle = 'blue';
-            ctx.moveTo(canvas.width - 220, canvas.height - 50);
-            ctx.lineTo(canvas.width - 220, canvas.height - 20);
-            ctx.lineTo(canvas.width - 220 + lazerPower, canvas.height - 20);
-            ctx.lineTo(canvas.width - 220 + lazerPower, canvas.height - 50);
+            ctx.moveTo(canvas.width - 220, canvas.height - 70);
+            ctx.lineTo(canvas.width - 220, canvas.height - 40);
+            ctx.lineTo(canvas.width - 220 + lazerPower, canvas.height - 40);
+            ctx.lineTo(canvas.width - 220 + lazerPower, canvas.height - 70);
             ctx.fill();
         }
 
@@ -487,8 +504,17 @@ window.onload = function() {
             var s = "enemie(s): " + remainingEnemies;
             ctx.fillText(s, canvas.width - 10, 0);
 
+            var s = "red" +redCount;
+            ctx.fillText(s, canvas.width - 10, 50);
+
+            var s = "yellow" +yellowCount;
+            ctx.fillText(s, canvas.width - 10, 70);
+
             var s = "lazerPower";
-            ctx.fillText(s, canvas.width - 100, canvas.height-80);
+            ctx.fillText(s, canvas.width - 80, canvas.height-100);
+     
+     　　　　var s = "z = SingleShot, x = LazerShot, Arrow = Move";
+     　　　　ctx.fillText(s, 600, canvas.height-30);
         }
 
         if (msg) {
